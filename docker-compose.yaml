@@ -1,0 +1,45 @@
+version: '3.14'
+
+networks:
+  web_app:
+
+volumes:
+  database:
+
+services:
+  mariadb:
+    image: mariadb:10.7
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+    networks:
+      - web_app
+    volumes:
+      - database:/var/lib/mysql
+    restart: unless-stopped
+    container_name: database
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_USER=root
+      - PMA_PASSWORD=${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "8001:80"
+    depends_on:
+      - "mariadb"
+    networks:
+      - web_app
+    container_name: phpmyadmin
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8002:8025"
+    networks:
+      - web_app
+    container_name: mailhog
